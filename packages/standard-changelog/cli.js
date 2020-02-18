@@ -98,6 +98,7 @@ const sameFile = flags.sameFile
 const outfile = sameFile ? (flags.outfile || infile) : flags.outfile
 const append = flags.append
 const releaseCount = flags.firstRelease ? 0 : flags.releaseCount
+var mergeCommitFilter = flags.mergeCommitFilter || 'exclude'
 
 const options = _.omitBy({
   preset: flags.preset,
@@ -106,6 +107,7 @@ const options = _.omitBy({
   },
   append: append,
   releaseCount: releaseCount,
+  mergeCommitFilter: mergeCommitFilter,
   lernaPackage: flags.lernaPackage
 }, _.isUndefined)
 
@@ -131,6 +133,34 @@ try {
 } catch (err) {
   outputError(err)
 }
+
+var gitRawCommitsOpts = {}
+
+if (options.mergeCommitFilter) {
+  if (options.mergeCommitFilter === 'include') {
+    gitRawCommitsOpts.merges = null
+  } else if (options.mergeCommitFilter === 'only-merges') {
+    gitRawCommitsOpts.merges = true
+  } else { // default to options.mergeCommitFilter === 'exclude'
+    gitRawCommitsOpts.merges = false
+  }
+}
+
+if (flags.commitPath) gitRawCommitsOpts.path = flags.commitPath
+
+var gitRawCommitsOpts = {}
+
+if (options.mergeCommitFilter) {
+  if (options.mergeCommitFilter === 'include') {
+    gitRawCommitsOpts.merges = null
+  } else if (options.mergeCommitFilter === 'only-merges') {
+    gitRawCommitsOpts.merges = true
+  } else { // default to options.mergeCommitFilter === 'exclude'
+    gitRawCommitsOpts.merges = false
+  }
+}
+
+if (flags.commitPath) gitRawCommitsOpts.path = flags.commitPath
 
 const changelogStream = standardChangelog(options, templateContext, flags.commitPath ? { path: flags.commitPath } : {})
   .on('error', function (err) {
